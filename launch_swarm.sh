@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 #
 # Script name:   launch_swarm.sh
 # Author:        Derek M. Shore, PhD
@@ -10,29 +10,33 @@
 # use: ./launch_swarm.sh
 
 swarmNumber=0
-numberOfTrajsPerSwarm=6
-jobName="benchmarking" # no spaces
+numberOfTrajsPerSwarm=24
 number_of_jobs=2
+number_of_gpus_per_replica=1 # note: this should be 1 unless your system is > 500,000 atoms
+
+jobName="test" # no spaces
+partitionName="batch"            #Slurm partition to run job on
+accountName="bip109"
 
 # do not edit below this line
 
 firstIteration=0
-numberOfNodes=`expr $numberOfTrajsPerSwarm / 6`
+numberOfNodes=$((numberOfTrajsPerSwarm*number_of_gpus_per_replica/8))
 swarmNumber_padded=`printf %04d $swarmNumber`
 fullJobName=${jobName}_swarm${swarmNumber_padded}
 
-for (( this_job=0; this_job<$number_of_jobs; this_job++ ))
+
+for (( subjob=0; subjob<$number_of_jobs; subjob++ ))
 do
   if [ $firstIteration -eq 0 ]
   then
-    jobSchedulerOutput="$(bsub -P BIP109 -W 2:00 -nnodes $numberOfNodes -J ./raw_swarms/submission_logs/${fullJobName} -alloc_flags "smt4" -alloc_flags gpumps ./submit_swarm_subjobs.sh $swarmNumber $numberOfTrajsPerSwarm)"
+     job_scheduler_output="$(sbatch -A $accountName -J $jobName -N ${numberOfNodes} -p $partitionName -t 0-02:00:00 -o ./raw_swarms/submission_logs/${fullJobName}_slurm-%A.out ./submit_swarm_subjobs.sh $swarmNumber $numberOfTrajsPerSwarm $number_of_gpus_per_replica)"       
   else
-    jobSchedulerOutput="$(bsub -P BIP109 -W 2:00 -nnodes $numberOfNodes -J ./raw_swarms/submission_logs/${fullJobName} -alloc_flags "smt4" -alloc_flags gpumps -w $job_scheduler_number ./submit_swarm_subjobs.sh $swarmNumber $numberOfTrajsPerSwarm)"
+     job_scheduler_output="$(sbatch -A $accountName --depend=afterok:${job_scheduler_number} -J $jobName -N ${numberOfNodes} -p $partitionName -t 0-02:00:00 -o ./raw_swarms/submission_logs/${fullJobName}_slurm-%A.out ./submit_swarm_subjobs.sh $swarmNumber $numberOfTrajsPerSwarm $number_of_gpus_per_replica)" 
   fi
 
-  job_scheduler_number=$(echo $jobSchedulerOutput | awk '{print $2}' | sed -e 's/<//' | sed -e 's/>//')
+  job_scheduler_number=$(echo $job_scheduler_output | awk '{print $4}')
   let firstIteration=1
-done 
+done
 
 exit
-
