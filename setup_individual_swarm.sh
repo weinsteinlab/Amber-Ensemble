@@ -30,7 +30,6 @@ directoryNumber=0
 directoryNumberPadded=`printf %04d $directoryNumber`
 currentNumberOfReplicas=$(cat ./inputs/${directoryNumberPadded}/numberOfReplicas.txt)
 
-cp ./node_submitter.sh $swarm_path/.
 
 for (( traj_number=0; traj_number<$number_of_trajs_per_swarm; traj_number++ ))
 do
