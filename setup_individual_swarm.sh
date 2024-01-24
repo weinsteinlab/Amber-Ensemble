@@ -10,7 +10,7 @@
 # Use: ./setup_individual.sh 
 
 swarm_number=0
-number_of_trajs_per_swarm=6
+number_of_trajs_per_swarm=8
 
 # do not edit below this line
 
@@ -20,7 +20,6 @@ CWD=`pwd`
 swarm_path=$CWD/raw_swarms/swarm${swarm_number_padded}
 mkdir -p $swarm_path
 mkdir -p $CWD/raw_swarms/submission_logs
-mkdir -p $CWD/progress
 
 # we start with host_number 1 because 0 is the launch node
 host_number=1
@@ -37,7 +36,7 @@ do
   traj_path=$swarm_path/swarm${swarm_number_padded}_traj$traj_number_padded
 
   mkdir $traj_path
-  cp ./common/run_python.sh $traj_path/.
+  cp ./common/run_amber.sh $traj_path/.
   cp ./inputs/${directoryNumberPadded}/*.* $traj_path/.
   ((currentNumberOfReplicas--))
 
@@ -49,5 +48,9 @@ do
   fi
      
 done
+
+cd raw_swarms/swarm0000
+index_zero=$((number_of_trajs_per_swarm-1))
+for i in `seq 0 ${index_zero}`; do j=`printf %04d $i`; cd swarm0000_traj${j}; rename swarm0000_subjob0000 swarm0000_traj${j}_subjob0000 swarm0000*; cd ..; done
 
 exit

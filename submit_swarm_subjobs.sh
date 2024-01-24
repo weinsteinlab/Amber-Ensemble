@@ -16,11 +16,11 @@ swarm_path=$CWD/raw_swarms/swarm${swarm_number_padded}
 
 numberOfFinishedRuns=$(find ./raw_swarms/. -name 'amber_run.log' -exec tail -n1 {} \; | grep FINISHED | wc -l)
 subjob_number=0
-isPriorRun=$(ls ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number_padded}_traj0000/*subjob*.log 2> /dev/null | tail -n1 | wc -l)
+isPriorRun=$(ls ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number_padded}_traj0000/*subjob*.mdinfo 2> /dev/null | tail -n1 | wc -l)
 
 if [ $isPriorRun == 1 ]; then
-    full_name=$(ls ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number_padded}_traj0000/*subjob*.log 2> /dev/null | tail -n1)
-    padded_subjob_number=${full_name: -8:-4}
+    full_name=$(ls ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number_padded}_traj0000/*subjob*.mdinfo 2> /dev/null | tail -n1)
+    padded_subjob_number=${full_name: -11:-7}
     subjob_number=$((10#$padded_subjob_number))
     ((subjob_number++))
 fi
