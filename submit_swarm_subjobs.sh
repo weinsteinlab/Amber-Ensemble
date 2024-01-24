@@ -14,7 +14,7 @@ CWD=`pwd`
 swarm_path=$CWD/raw_swarms/swarm${swarm_number_padded}
 
 
-numberOfFinishedRuns=$(find ./raw_swarms/. -name 'python_run.log' -exec tail -n1 {} \; | grep FINISHED | wc -l)
+numberOfFinishedRuns=$(find ./raw_swarms/. -name 'amber_run.log' -exec tail -n1 {} \; | grep FINISHED | wc -l)
 subjob_number=0
 isPriorRun=$(ls ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number_padded}_traj0000/*subjob*.log 2> /dev/null | tail -n1 | wc -l)
 
@@ -40,7 +40,7 @@ for ((traj_number=0; traj_number<$number_of_trajs_per_swarm; traj_number++)); do
 
     cd $traj_path
 
-    OMP_NUM_THREADS=1 srun -u --gpus-per-task=1 --gpu-bind=closest -N1 -n1 -c1 srun  ./run_python.sh $subjob_number $number_of_gpus_per_replica > ./python_log.txt &
+    OMP_NUM_THREADS=1 srun -u --gpus-per-task=$number_of_gpus_per_replica --gpu-bind=closest -N1 -n1 -c1 ./run_amber.sh $subjob_number > ./amber_log.txt &
 done
 
 wait
