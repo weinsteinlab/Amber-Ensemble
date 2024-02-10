@@ -85,16 +85,16 @@ That's it--if everything went correctly, all dependencies needed for this workfl
 The first step in using these tools is to first clone a copy of this repository, in a directory that is appropriate for running swarms of MD simulations ('swarm' is defined in the [this section](#step-1-initial-structures)).
 ```
 cd wherever_you_wish_to_run
-git clone https://github.com/weinsteinlab/OpenMM-Summit-Ensemble.git
+git clone git@github.com:weinsteinlab/Amber-Frontier-Ensemble.git
 ```
 
 Optionally, you can rename the cloned repository to something meaningful for your calculations
 ```
-mv adaptive-sampling-workflow-tools-for-summit my_adaptive_sampling_run
+mv Amber-Frontier-Ensemble my_Amber_ensemble
 ```
 Once this is done, go into this directory:
 ```
-cd my_adaptive_sampling_run # or whatever the directory is named at this point
+cd my_Amber_ensemble # or whatever the directory is named at this point
 ```
 
 **Note: directory is hereafter referred to as the parent directory**
@@ -102,21 +102,20 @@ cd my_adaptive_sampling_run # or whatever the directory is named at this point
 
 Next, you'll need to populate/edit files in the directory `./inputs`
 
-**Note:** You'll see there is another directory called `./common`: do **NOT** edit anything in this directory! It contains scripts that facilitate job management and should not be edited by the user.
+**Note:** You'll see there is another directory called `./common`: do **NOT** edit anything in this directory! It contains a script that facilitate job management and should not be edited by the user.
 
 `./inputs` should contain a separate subdirectory for each unique system you wish to run. These subdirectories MUST have 4-zero-padded, zero-indexed names (e.g., `0000`, `0001`, `0002`, etc.). Deviating from this nomenclature WILL break the scripts.
 
-Each subdirectory must contain all of the simulation system-specific files needed to simulate your system with openMM:
-*  **ionized.psf**: this protein structure file possesses model structural information (bond connectivity, etc.). The file can be named anything, but must end in .psf, and cannot be a binary file.
-*  **hdat_3_1_restart_coor.pdb**: this protein data bank file contains the initial coordinates for your system. The file can be named anything, but must end in .pdb, and cannot be a binary file.
+**Note:** This workflow assumes you are RESTARTING Amber simulations (i.e., you have already built/equilibrated the system with CHARMM-GUI).
+
+Each subdirectory must contain all of the simulation system-specific files needed to simulate your system with Amber 22:
+*  **parm.parm7**: this protein structure file possesses model structural information (bond connectivity, etc.). The file can be named anything, but must end in .parm7, and cannot be a binary file.
+*  **swarm0000_subjob0000.rst7**: restart coordinates for your system. Use this name.
 *  **hdat_3_1_restart_coor.xsc**: this NAMD-generated extended system configuration file describes the system's periodic cell size for the .pdb described above. The file can be named anything, but must end in .xsc.
 *  **parameters_all36.prm**: this parameter file contains the CHARMM36 parameters needed to simulate your system. Any number of parameters files can be used, and these file can be named anything, but they must end in .prm.
 *  **all_masses.rtf**: this file has a description of all the atom types, masses, and elements used by your system. Any number of mass files can be used, and these file can be named anything, but they must end in .rtf.
-*  **input.py**: this python script defines the openMM simulation; it **MUST** be named input.py. Here, the statistical ensemble is selected (e.g. NPT), temperature, and many, many other simulation parameters. The key ones to pay attention to are:
-    * steps = 100000: the number of simulation steps per simulation subjob (subjobs are described later), but basically this should be the number of steps that can be run in 2 hours or less.
-    * dcdReporter = DCDReporter(dcd_name, 20000): here the last number indicates how often the coordinates are written to the .dcd file; in this example, it's every 20,000 steps.
-    * dataReporter = StateDataReporter(log_name, 20000, ...: here, the 20000 indicates how frequently the log file is populated with simulation details, such as various energies and simulation progress.
-*  **numberOfReplicas.txt**: this file contains to number of replicas to run for this system. MUST be a multiple of 6.
+*  **input.mdin**: this input script defines the Amber22 simulation (i.e., how it is run); it **MUST** be named input.mdin. Here, the statistical ensemble is selected (e.g. NPT), temperature, and many, many other simulation parameters. The settings are commented well, so it should be clear. Be sure to consider temperature (temp0), coordinate temporal resolution (ntwx), and other physics related-settings.
+*  **numberOfReplicas.txt**: this file contains to number of replicas to run for this system. MUST be a multiple of 8.
 
 **Note:** make sure you have benchmarked each different system and have adjusted its individual `steps=` parameter accordingly. This workflow supports running an arbitrarily high number of systems (up to 9,999) with no restrictions on size differences. However, this functionality relies on adjusting each systems `steps=` to what can run in 2 hours. 
 
