@@ -8,11 +8,10 @@
 ---
 # Setup Environment
 
-This molecular dynamics (MD) adaptive sampling workflow has several software dependencies: 
+This molecular dynamics (MD) ensemble workflow has several software dependencies: 
 
 *  Amber22, 
 *  VMD,
-*  several python libraries
 
 This software is already installed for the Weinstein lab. In this section, we describe how to setup your environment to use these installations.
 
