@@ -12,35 +12,68 @@
 
 This molecular dynamics (MD) adaptive sampling workflow has several software dependencies: 
 
-*  openMM, 
+*  Amber22, 
 *  VMD,
 *  several python libraries
 
 This software is already installed for the Weinstein lab. In this section, we describe how to setup your environment to use these installations.
 
-Add the following to your `~.bashrc`
+Add the following to your `~.bashrc` (this should replace any currently present conda code blocks) 
 
 ```
-export PATH=$PATH:/ccs/proj/bip180/vmd-1.9.3/install_bin
-export PATH=$PATH:/ccs/proj/bip180/vmd-1.9.3/plugins/OPENPOWER/bin/catdcd5.1
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/ccs/proj/bip180/anaconda_2019_07/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/ccs/proj/bip180/anaconda_2019_07/etc/profile.d/conda.sh" ]; then
-        . "/ccs/proj/bip180/anaconda_2019_07/etc/profile.d/conda.sh"
-    else
-        export PATH="/ccs/proj/bip180/anaconda_2019_07/bin:$PATH"
-    fi
+if [[ "$(hostname -s)" == *"andes"* ]] ; then
+    source /ccs/proj/bip109/rhea/gromacs/gromacs-2023.1_install/bin/GMXRC.bash
 fi
-unset __conda_setup
-# <<< conda initialize <<<
 
+if [[ "$(hostname -s)" == *"rhea"* ]] || [[ "$(hostname -s)" == *"andes"* ]] ; then
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('/ccs/proj/bip109/rhea/anaconda_2020_07/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/ccs/proj/bip109/rhea/anaconda_2020_07/etc/profile.d/conda.sh" ]; then
+            . "/ccs/proj/bip109/rhea/anaconda_2020_07/etc/profile.d/conda.sh"  # commented out by conda initialize
+        else
+            export PATH="/ccs/proj/bip109/rhea/anaconda_2020_07/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+    # <<< conda initialize <<<
+elif [[ "$(hostname -f)" == *"frontier"* ]]; then
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    source /ccs/proj/bip109/frontier/amber22/amber22_src/dist/amber.sh
+    __conda_setup="$('/ccs/proj/bip109/frontier/conda/miniconda3_py310_23.3.1-0_2023_05_10/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/ccs/proj/bip109/frontier/conda/miniconda3_py310_23.3.1-0_2023_05_10/etc/profile.d/conda.sh" ]; then
+            . "/ccs/proj/bip109/frontier/conda/miniconda3_py310_23.3.1-0_2023_05_10/etc/profile.d/conda.sh"  # commented out by conda initialize
+        else
+            export PATH="/ccs/proj/bip109/frontier/conda/miniconda3_py310_23.3.1-0_2023_05_10/bin:$PATH"  # commented out by conda initialize
+        fi
+    fi
+    unset __conda_setup
+    # <<< conda initialize <<<
+else
+    source /ccs/proj/bip109/summit/amber/amber20/amber.sh
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('/ccs/proj/bip109/summit/anaconda/anaconda_2021_05/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/ccs/proj/bip109/summit/anaconda/anaconda_2021_05/etc/profile.d/conda.sh" ]; then
+            . "/ccs/proj/bip109/summit/anaconda/anaconda_2021_05/etc/profile.d/conda.sh"   # commented out by conda initialize
+        else
+            export PATH="/ccs/proj/bip109/summit/anaconda/anaconda_2021_05/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+    # <<< conda initialize <<<
+fi
 ```
-**Note:** Make SURE there are **NO** other references to (ana)conda or VMD in your `~/.bashrc` or you may get very unpredictable results.
 
 
 That's it--if everything went correctly, all dependencies needed for this workflow should now be available!
