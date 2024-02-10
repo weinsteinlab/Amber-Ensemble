@@ -1,11 +1,9 @@
 # Table of contents:
 - [Setup Environment](#setup-enviornment)
 - [Pre-workflow setup](#pre-workflow-setup)
-- [OpenMM Ensemble Workflow](#openmm-ensemble-workflow)
+- [Amber Ensemble Workflow](#openmm-ensemble-workflow)
   * [Step 1: Generate swarm directory structure](#step-1-generate-swarm-directory-structure)
   * [Step 2: Launching a swarm](#step-2-launching-a-swarm)
-  * [Step 3: Concatenate swarm subjobs](#step-3-concatenate-swarm-subjobs)
-  * [Step 4: Repeat steps 1-3!](#step-4-repeat-steps-1-3)
 <!-- toc -->
 ---
 # Setup Environment
@@ -109,28 +107,23 @@ Next, you'll need to populate/edit files in the directory `./inputs`
 **Note:** This workflow assumes you are RESTARTING Amber simulations (i.e., you have already built/equilibrated the system with CHARMM-GUI).
 
 Each subdirectory must contain all of the simulation system-specific files needed to simulate your system with Amber 22:
-*  **parm.parm7**: this protein structure file possesses model structural information (bond connectivity, etc.). The file can be named anything, but must end in .parm7, and cannot be a binary file.
+*  **parm.parm7**: this protein structure file possesses model structural information (bond connectivity, etc.). The file can be named anything, but must end in .parm7, and cannot be a binary file. Note: this file also contains toppar information, so extra toppar files are not needed.
 *  **swarm0000_subjob0000.rst7**: restart coordinates for your system. Use this name.
-*  **hdat_3_1_restart_coor.xsc**: this NAMD-generated extended system configuration file describes the system's periodic cell size for the .pdb described above. The file can be named anything, but must end in .xsc.
-*  **parameters_all36.prm**: this parameter file contains the CHARMM36 parameters needed to simulate your system. Any number of parameters files can be used, and these file can be named anything, but they must end in .prm.
-*  **all_masses.rtf**: this file has a description of all the atom types, masses, and elements used by your system. Any number of mass files can be used, and these file can be named anything, but they must end in .rtf.
 *  **input.mdin**: this input script defines the Amber22 simulation (i.e., how it is run); it **MUST** be named input.mdin. Here, the statistical ensemble is selected (e.g. NPT), temperature, and many, many other simulation parameters. The settings are commented well, so it should be clear. Be sure to consider temperature (temp0), coordinate temporal resolution (ntwx), and other physics related-settings.
 *  **numberOfReplicas.txt**: this file contains to number of replicas to run for this system. MUST be a multiple of 8.
 
-**Note:** make sure you have benchmarked each different system and have adjusted its individual `steps=` parameter accordingly. This workflow supports running an arbitrarily high number of systems (up to 9,999) with no restrictions on size differences. However, this functionality relies on adjusting each systems `steps=` to what can run in 2 hours. 
+*  **Optional**: You can also include `swarm0000_subjob0000.mdinfo`, `swarm0000_subjob0000.mdout`, `swarm0000_subjob0000.nc`, but this is just for convenience (these specific files are not used in the running of this ensemble job).
 
-**Note:** Until experienced with Summit's performance for a given set of systems, I recommend only requesting 80% of the number of steps that can be performed in 2 hours. This way, there is little risk of any of the systems running out of time, creating a mess to clean up.
+**Note:** make sure you have benchmarked each different system and have adjusted its individual `steps=` parameter accordingly. This workflow supports running an arbitrarily high number of systems (up to 9,999) with no restrictions on size differences. However, this functionality relies on adjusting each systems `nstlim=` to what can run in 2 hours. 
 
-**VERY IMPORTANT:** `input.py` only contains ensemble-related information. All descriptions of input files are automatically understood by what is present in each subdirectory. Do NOT describe input files in this file, or the scripts will break.
+**Note:** Until experienced with Frontier's performance for a given set of systems, I recommend only requesting 80% of the number of steps that can be performed in 2 hours. This way, there is little risk of any of the systems running out of time, creating a mess to clean up.
+
+**VERY IMPORTANT:** `input.mdin` only contains ensemble-related information. All descriptions of input files are automatically understood by what is present in each subdirectory. Do NOT describe input files in this file, or the scripts will break.
 
 Finally, if you only have 1 system to run (with many replicas), just create 1 subdirectory in `inputs`.
 
 
-# OpenMM Ensemble Workflow
-
-The steps for the workflow described below must be currently manually run. This is intentional, so as not to complicate integration with other workflow applications. Furthermore, each step below has been designed to represent complete modules/pieces of the workflow, and should not be fractured without some discussion.
-
-
+# Amber Ensemble Workflow
 ---
 ### Step 1: Generate swarm directory structure
 After populating `./inputs` your  step is to generate the directory structure for a given swarm, and all of the subdirectories for the independent trajectories that make up this swarm. 
@@ -138,11 +131,11 @@ Open ```setup_individual_swarm.sh``` in vim, and edit the following variables:
 
 ```
 swarm_number=0
-number_of_trajs_per_swarm=24
+number_of_trajs_per_swarm=8
 ```
 
 `swarm_number=0` is the swarm number you wish to run; it is zero indexed.
-`number_of_trajs_per_swarm=24` is the number of MD trajectories per MD swarm. MUST be a multiple of 6
+`number_of_trajs_per_swarm=8` is the number of MD trajectories per MD swarm. MUST be a multiple of 8
 
 After editing this file, generate the initial structures directory with the following command:
 ```
@@ -169,18 +162,18 @@ To run all of the trajectories that make up the MD swarm, open `launch_swarm.sh`
 
 ```
 swarmNumber=0
-numberOfTrajsPerSwarm=24
-firstSubjob=0
-lastSubjob=3
+numberOfTrajsPerSwarm=8
+number_of_jobs=1 # how many 2-hour jobs you want to run
 jobName="your_job_name" # no spaces
+
+partitionName="batch"            #Slurm partition to run job on
+accountName="bip109"
 ```
 
 The first 2 variables have already been described and must be consistent with whatever was set in `setup_individual_swarm.sh`.
 
-The next 2 variables have to deal with trajectory subjobs. Because Summit has a maximum job runtime of 2 hours, a single trajectory must be run over many subjobs to achieve the needed desired simulation time. The number of subjobs should equal: (total_simulation_time / simulation_time_per_2_hours). **Note: Summit only allows 100 jobs to be submitted per user, so the number of subjobs must be <= 100**
+The next 2 variables have to deal with trajectory subjobs. Because Frontier has a maximum job runtime of 2 hours, a single trajectory must be run over many subjobs to achieve the needed desired simulation time. The number of subjobs should equal: (total_simulation_time / simulation_time_per_2_hours). 
 
-`firstSubjob`: is the number of the first subjob, zero indexed. It should be zero, unless a swarm run crashes and needs to be restarted from a given subjob.
-`lastSubjob`: this is `n - number_of_subjobs_you_wish_to_run`
 `jobName`: what you wish to name the job (this will be publically visible in the job scheduler)
 
 Finally, submit the MD swarm to the job scheduler with the following command:
@@ -189,24 +182,8 @@ Finally, submit the MD swarm to the job scheduler with the following command:
 ./launch_swarm.sh
 ```
 
-This command submits subjob # `first_subjob` to run first (for all of the trajectories within this swarm), with subsequent subjobs dependent on the successful completion of prior subjobs runs. 
-
 The status of the MD swarm can be checked with the following command:
 
-```
-bjobs
-```
-
----
-
-### Step 3: Concatenate swarm subjobs
-
-Needs to be re-written to support multiple systems! Work-in-progress!
----
+`squeue -u $USER`
 
 
-### Step 4: Repeat steps 1-3!
-
-To start the next MD swarm, simply go back to [Step 2](#step-1-generate-swarm-directory-structure) and increment the swarm number (in this example case, the next swarm number is 1).
-
----
