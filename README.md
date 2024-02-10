@@ -1,7 +1,7 @@
 # Table of contents:
 - [Setup Environment](#setup-enviornment)
 - [Pre-workflow setup](#pre-workflow-setup)
-- [Amber Ensemble Workflow](#openmm-ensemble-workflow)
+- [Amber Ensemble Workflow](#amber-ensemble-workflow)
   * [Step 1: Generate swarm directory structure](#step-1-generate-swarm-directory-structure)
   * [Step 2: Launching a swarm](#step-2-launching-a-swarm)
 <!-- toc -->
