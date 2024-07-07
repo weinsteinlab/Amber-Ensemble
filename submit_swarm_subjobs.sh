@@ -28,10 +28,23 @@ fi
 if [ $subjob_number -gt 0 ] && [ $numberOfFinishedRuns != $number_of_trajs_per_swarm ]
 then
   ((subjob_number--))
-  touch ./subjob_${subjob_number}_FAILED
-  scancel $SLURM_JOB_ID
-  exit 1
+  pwd
+  echo "job ${subjob_number}_restarted"
+  touch ./subjob_${subjob_number}_restarted
+
+  padded_old_subjob_number=`printf %04d $subjob_number`
+  old_jobs_started=`find ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number}_*subjob${padded_old_subjob_number}.mdout | wc -l`
+
+  old_jobs_started=`find ${CWD}/raw_swarms/swarm${swarm_number_padded} -name "swarm${swarm_number_padded}_*subjob${padded_old_subjob_number}.mdout" | wc -l`
+
+  if [ $old_jobs_started -lt 504 ]; then
+    scancel $SLURM_JOB_ID
+    exit 1
+  fi
+
+  find ${CWD}/raw_swarms/swarm${swarm_number_padded} -name "*subjob${padded_old_subjob_number}*" -exec rm {} \;
 fi
+
 
 
 for ((traj_number=0; traj_number<$number_of_trajs_per_swarm; traj_number++)); do
@@ -41,6 +54,8 @@ for ((traj_number=0; traj_number<$number_of_trajs_per_swarm; traj_number++)); do
     cd $traj_path
 
     OMP_NUM_THREADS=1 srun -u --gpus-per-task=$number_of_gpus_per_replica --gpu-bind=closest -N1 -n1 -c1 ./run_amber.sh $subjob_number > ./amber_log.txt &
+
+    sleep 0.75
 done
 
 wait
