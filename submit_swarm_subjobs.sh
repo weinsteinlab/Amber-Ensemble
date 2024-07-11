@@ -33,9 +33,7 @@ then
   touch ./subjob_${subjob_number}_restarted
 
   padded_old_subjob_number=`printf %04d $subjob_number`
-  old_jobs_started=`find ${CWD}/raw_swarms/swarm${swarm_number_padded}/swarm${swarm_number}_*subjob${padded_old_subjob_number}.mdout | wc -l`
-
-  old_jobs_started=`find ${CWD}/raw_swarms/swarm${swarm_number_padded} -name "swarm${swarm_number_padded}_*subjob${padded_old_subjob_number}.mdout" | wc -l`
+  old_jobs_started=`find . -name "*subjob${padded_old_subjob_number}.mdout" | wc -l`
 
   if [ $old_jobs_started -lt $number_of_trajs_per_swarm ]; then
     scancel $SLURM_JOB_ID
