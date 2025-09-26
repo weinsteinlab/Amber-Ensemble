@@ -112,7 +112,7 @@ If the cluster name is not one of the above, the script **exits with an error**.
    Clone a copy of this repository, in a directory that is appropriate for running swarms of MD simulations.
    ```
    cd wherever_you_wish_to_run
-   git clone git@github.com:weinsteinlab/Amber-Frontier-Ensemble.git
+   git clone git@github.com:weinsteinlab/Amber-Ensemble.git
    ```
 
    Optionally, you can rename the cloned repository to something meaningful for your calculations
