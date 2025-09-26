@@ -1,4 +1,4 @@
-# Amber-Frontier-Ensemble — Swarm Launcher
+# Amber Ensemble
 
 Utilities to set up and launch **Amber MD** “swarms” (many independent trajectories) on Slurm-based clusters.  
 Two launch modes are supported:
