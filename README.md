@@ -108,7 +108,8 @@ If the cluster name is not one of the above, the script **exits with an error**.
 ## Quick start
 
 0. **Download code**
-   Clone a copy of this repository, in a directory that is appropriate for running swarms of MD simulations ('swarm' is defined in the [this section](#step-1-initial-structures)).
+   
+   Clone a copy of this repository, in a directory that is appropriate for running swarms of MD simulations.
    ```
    cd wherever_you_wish_to_run
    git clone git@github.com:weinsteinlab/Amber-Frontier-Ensemble.git
@@ -125,7 +126,7 @@ If the cluster name is not one of the above, the script **exits with an error**.
    **Note: directory is hereafter referred to as the parent directory**
    
 
-1. **Stage inputs**  
+2. **Stage inputs**  
   **Note:** You'll see there is another directory called `./common`: do **NOT** edit anything in this directory! It contains a script that facilitate job management and should not be edited by the user.
 
   `./inputs` should contain a separate subdirectory for each unique system you wish to run. These subdirectories MUST have 4-zero-padded, zero-indexed names (e.g., `0000`, `0001`, `0002`, etc.). Deviating from this nomenclature WILL break the scripts.
