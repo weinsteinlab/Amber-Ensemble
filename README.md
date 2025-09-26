@@ -36,7 +36,7 @@ The scripts auto-detect the cluster via Slurm’s `ClusterName` and load the rig
 ## Repository layout
 
 ```
-Amber-Frontier-Ensemble/
+Amber-Ensemble/
 ├─ launch_swarm.sh              # submit orchestrator (array or alloc)
 ├─ submit_swarm_subjobs.sh      # per-trajectory runner (does safe cleanup & srun)
 ├─ setup_individual_swarm.sh    # helper to make per-traj directory scaffolding
@@ -117,7 +117,7 @@ If the cluster name is not one of the above, the script **exits with an error**.
 
    Optionally, you can rename the cloned repository to something meaningful for your calculations
    ```
-   mv Amber-Frontier-Ensemble my_Amber_ensemble
+   mv Amber-Ensemble my_Amber_ensemble
    ```
    Once this is done, go into this directory:
    ```
