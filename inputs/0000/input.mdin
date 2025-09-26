@@ -14,7 +14,7 @@ A NPT simulation for common production-level simulations
     fswitch=10.0,   ! start nonbonded cutoff, in Angstroms
 
     ! MD settings
-    nstlim=2500000, ! 2.5 million steps, 10 ns total
+    nstlim=60000, ! 2.5 million steps, 10 ns total
     dt=0.004,      ! time step (ps)
 
     ! SHAKE
