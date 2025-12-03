@@ -23,7 +23,7 @@ case "$cluster" in
   delta)
     # Delta (current stack)
     source /work/hdd/bbqz/des2037/software/pmemd24/amber.sh
-    module load openmpi+cuda/4.1.5+cuda
+    #module load openmpi+cuda/4.1.5+cuda
     PMEMD_BIN="${PMEMD_BIN:-pmemd.cuda}"
     ;;
   frontier)
