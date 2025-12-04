@@ -9,23 +9,48 @@ PMEMD_BIN="${PMEMD_BIN:-}"
 
 case "$cluster" in
   scu)
-    # SCU
-    source /software/apps/amber/amber24/pmemd24/amber.sh
-    module load cuda/12.2.1-gcc-8.2.0-23runmx
-    module load openmpi/4.1.5
+    # SCU (heterogeneous OS on compute nodes)
+    # You can still override explicitly with:
+    #   export PMEMD_BIN=/full/path/to/pmemd.{cuda,hip,MPI}
+    os_release="$(cat /etc/redhat-release 2>/dev/null || echo "UNKNOWN")"
+
+    case "$os_release" in
+      *"Rocky Linux release 9."*)
+        # Rocky 9.x (your current "correct" target)
+        source /software/apps/amber/amber24/pmemd24/amber.sh
+        ;;
+      *"Rocky Linux release 8."*)
+        source /software/apps/amber/amber24/amber24_rocky8/pmemd24/amber.sh
+        module load cuda/12.2.1-gcc-8.2.0-23runmx
+        module load openmpi/4.1.5
+        ;;
+      *"CentOS Linux release 7."*)
+        source /software/apps/amber/amber24/amber24_centos7/pmemd24/amber.sh
+        module load cuda/12.2.1-gcc-8.2.0-23runmx
+        module load openmpi/4.1.5
+        ;;
+      *)
+        echo "ERROR: Unsupported SCU node OS: '$os_release'" >&2
+        exit 2
+        ;;
+    esac
+
     PMEMD_BIN="${PMEMD_BIN:-pmemd.cuda}"
     ;;
+
   cayuga)
     # Cayuga
     module load amber/24
     PMEMD_BIN="${PMEMD_BIN:-pmemd.cuda}"
     ;;
+
   delta)
     # Delta (current stack)
     source /work/hdd/bbqz/des2037/software/pmemd24/amber.sh
     #module load openmpi+cuda/4.1.5+cuda
     PMEMD_BIN="${PMEMD_BIN:-pmemd.cuda}"
     ;;
+
   frontier)
     # Frontier
     source /ccs/proj/bip109/frontier/amber22_gcc11.2/amber22_src/dist/amber.sh
@@ -35,6 +60,7 @@ case "$cluster" in
     module load rocm/5.3.0
     PMEMD_BIN="${PMEMD_BIN:-pmemd.hip}"
     ;;
+
   *)
     echo "ERROR: Unsupported cluster '$cluster'. Supported: scu, cayuga, delta, frontier." >&2
     exit 2

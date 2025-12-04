@@ -21,15 +21,15 @@ job_name_base="test"           # static prefix for job names
 # Node sizing
 trajectories_per_node=4        # alloc mode: nodes = ceil(n_trajs_per_swarm / trajectories_per_node)
 
-account="bbqz-delta-gpu"                # bip109 for frontier
+account="scu-login01"                # bip109 for frontier
                                # hwlab for scu-login01
                                # cayuga_0002 for cayuga
                                # delta: allocation specific, generally has the form
                                #        XXXX-delta-gpu, where XXXX is your group name
                                #        e.g., bbft-delta-gpu
 
-partition="gpuA40x4,gpuA40x4-interactive,gpuA100x4-interactive"           # cluster specific
-                               # scu-login01: hwlab-rocky-gpu
+partition="hwlab-rocky-gpu,hw-gpu-r9,scu-gpu,cryo-gpu-low,cryo-gpu-v100-low,cryo-gpu-p100-low"           # cluster specific
+                               # scu-login01: hwlab-rocky-gpu,hw-gpu-r9,scu-gpu,cryo-gpu-low,cryo-gpu-v100-low,cryo-gpu-p100-low
                                # cayuga: scu-gpu
                                # delta: gpuA40x4
                                # frontier: batch
