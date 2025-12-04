@@ -21,7 +21,7 @@ job_name_base="test"           # static prefix for job names
 # Node sizing
 trajectories_per_node=4        # alloc mode: nodes = ceil(n_trajs_per_swarm / trajectories_per_node)
 
-account="scu-login01"                # bip109 for frontier
+account="hwlab"                # bip109 for frontier
                                # hwlab for scu-login01
                                # cayuga_0002 for cayuga
                                # delta: allocation specific, generally has the form
