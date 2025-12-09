@@ -6,6 +6,7 @@ set -euo pipefail
 #   export PMEMD_BIN=/full/path/to/pmemd.{cuda,hip,MPI}
 cluster="${SLURM_CLUSTER_NAME:-unknown}"
 PMEMD_BIN="${PMEMD_BIN:-}"
+export LD_LIBRARY_PATH=/home/software/spack/opt/spack/linux-centos7-x86_64/gcc-13.1.0/openblas-0.3.28-tsywxj3j3nc5omumde5igqrh7gwvl54o/lib/
 
 case "$cluster" in
   scu)
@@ -13,6 +14,7 @@ case "$cluster" in
     # You can still override explicitly with:
     #   export PMEMD_BIN=/full/path/to/pmemd.{cuda,hip,MPI}
     os_release="$(cat /etc/redhat-release 2>/dev/null || echo "UNKNOWN")"
+    hostname
 
     case "$os_release" in
       *"Rocky Linux release 9."*)
