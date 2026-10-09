@@ -10,7 +10,7 @@
 # Use: ./setup_individual.sh 
 
 swarm_number=0
-number_of_trajs_per_swarm=4 # should be a multiple of 8
+number_of_trajs_per_swarm=100 # should be a multiple of 8
 
 # do not edit below this line
 
@@ -18,6 +18,10 @@ swarm_number_padded=`printf %04d $swarm_number`
 CWD=`pwd`
 
 swarm_path=$CWD/raw_swarms/swarm${swarm_number_padded}
+if [ -e $swarm_path ]; then
+  echo "ERROR: $swarm_path already exists; refusing to overwrite an existing swarm." >&2
+  exit 1
+fi
 mkdir -p $swarm_path
 mkdir -p $CWD/raw_swarms/submission_logs
 

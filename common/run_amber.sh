@@ -23,7 +23,6 @@ case "$cluster" in
   delta)
     # Delta (current stack)
     source /work/hdd/bbqz/des2037/software/pmemd24/amber.sh
-    module load openmpi+cuda/4.1.5+cuda
     PMEMD_BIN="${PMEMD_BIN:-pmemd.cuda}"
     ;;
   frontier)
@@ -69,5 +68,12 @@ export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"
   -inf "${output_name}.mdinfo" \
   -x "${output_name}.nc"
 
+# Only mark FINISHED if pmemd actually completed and wrote a restart
+if ! grep -q "Total wall time" "${output_name}.mdout" || [[ ! -s "${output_name}.rst7" ]]; then
+  echo "ERROR: ${output_name} did not complete (no final timings in mdout or empty rst7)." >&2
+  exit 1
+fi
+
 echo "FINISHED" >> amber_run.log
+
 exit

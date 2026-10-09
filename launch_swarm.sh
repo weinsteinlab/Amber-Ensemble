@@ -13,22 +13,23 @@ set -euo pipefail
 # =====================
 mode="array"                   # 'alloc' or 'array'
 swarm_number=0                 # integer swarm ID
-n_trajs_per_swarm=4            # trajectories/replicas
-n_jobs_per_traj=1              # chained subjobs per trajectory
+n_trajs_per_swarm=100          # trajectories/replicas
+n_jobs_per_traj=10             # chained subjobs per trajectory
+last_subjob=19                 # trajectories stop after this subjob (empty = no cap)
 gpus_per_replica=1             # GPUs per subjob
-job_name_base="test"           # static prefix for job names
+job_name_base="fs"             # static prefix for job names
 
 # Node sizing
 trajectories_per_node=4        # alloc mode: nodes = ceil(n_trajs_per_swarm / trajectories_per_node)
 
-account="bbqz-delta-gpu"                # bip109 for frontier
+account="bbqz-delta-gpu"       # bip109 for frontier
                                # hwlab for scu-login01
                                # cayuga_0002 for cayuga
                                # delta: allocation specific, generally has the form
                                #        XXXX-delta-gpu, where XXXX is your group name
                                #        e.g., bbft-delta-gpu
 
-partition="gpuA40x4,gpuA40x4-interactive,gpuA100x4-interactive"           # cluster specific
+partition="gpuA40x4"           # cluster specific
                                # scu-login01: hwlab-rocky-gpu
                                # cayuga: scu-gpu
                                # delta: gpuA40x4
@@ -38,11 +39,11 @@ gpus_per_node=4                # only used for alloc jobs
                                # delta: 4
                                # frontier: 8
 
-time_limit="01:00:00"          # hh:mm:ss
+time_limit="08:00:00"          # hh:mm:ss
 
 email=""                       # optional
 array_max_parallel=""          # e.g., 8 to throttle array concurrency; empty = unlimited
-extra_sbatch_flags=( )         # e.g., ("--qos=normal" "--constraint=a100" "--mem=16G" "-c" "4")
+extra_sbatch_flags=( "--mem=8G" )  # e.g., ("--qos=normal" "--constraint=a100" "--mem=16G" "-c" "4")
 # =====================
 # == END USER CONFIG ==
 # =====================
@@ -85,34 +86,37 @@ prev_job_id=""
 for (( subjob=0; subjob<n_jobs_per_traj; subjob++ )); do
   subjob_padded=$(printf "%04d" "$subjob")
   full_job_name="${job_name_base}${swarm_padded}_subjob${subjob_padded}"
-  out_pattern="${log_dir}/${full_job_name}_slurm-%A.out"
 
   if [[ "$mode" == "alloc" ]]; then
+    out_pattern="${log_dir}/${full_job_name}_slurm-%A.out"
     # Reserve enough GPUs per node for 'tasks_per_node' replicas, and run one task per replica.
     new_job_id=$(sbatch --parsable "${sbatch_flags[@]}" \
                    ${prev_job_id:+--dependency=afterok:${prev_job_id}} \
                    --job-name="$full_job_name" \
                    -N "$nodes_alloc" \
                    --ntasks-per-node="$tasks_per_node" \
-                   --gres=gpu:$(( trajectories_per_node * gpus_per_replica )) \
-		   --cpus-per-task=1 \
+                   --gres=gpu:$(( tasks_per_node * gpus_per_replica )) \
+                   --cpus-per-task=1 \
                    --distribution=block:block \
                    --output="$out_pattern" \
-                   ./submit_swarm_subjobs.sh "$swarm_number" "$n_trajs_per_swarm" "$gpus_per_replica" "alloc")
+                   ./submit_swarm_subjobs.sh "$swarm_number" "$n_trajs_per_swarm" "$gpus_per_replica" "alloc" "$last_subjob")
     echo "[INFO] Submitted ${full_job_name} as job ${new_job_id}${prev_job_id:+ (depends on $prev_job_id via afterok)}"
   else
+    out_pattern="${log_dir}/${full_job_name}_slurm-%A_%a.out"
     array_range="0-$((n_trajs_per_swarm-1))"
     pct=""
     if [[ -n "$array_max_parallel" ]]; then
       pct="%${array_max_parallel}"
     fi
+
     new_job_id=$(sbatch --parsable "${sbatch_flags[@]}" \
                    ${prev_job_id:+--dependency=afterok:${prev_job_id}} \
                    --array=${array_range}${pct} \
-		   --gres=gpu:${gpus_per_node} \
+                   --ntasks=1 \
+                   --gres=gpu:${gpus_per_replica} \
                    --job-name="$full_job_name" \
                    --output="$out_pattern" \
-                   ./submit_swarm_subjobs.sh "$swarm_number" "$n_trajs_per_swarm" "$gpus_per_replica" "array")
+                   ./submit_swarm_subjobs.sh "$swarm_number" "$n_trajs_per_swarm" "$gpus_per_replica" "array" "$last_subjob")
     echo "[INFO] Submitted ${full_job_name} with array ${array_range}${pct} as job ${new_job_id}${prev_job_id:+ (depends on $prev_job_id via afterok)}"
   fi
 
@@ -120,4 +124,3 @@ for (( subjob=0; subjob<n_jobs_per_traj; subjob++ )); do
 done
 
 exit 0
-
